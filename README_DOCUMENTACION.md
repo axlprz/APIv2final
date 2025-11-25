@@ -123,7 +123,7 @@ Creado automáticamente al iniciar:
 - **Contraseña**: admin
 - **Rol**: admin
 
-**⚠️ Importante**: Cambiar credenciales por defecto en entornos de producción.
+** Importante**: Cambiar credenciales por defecto en entornos de producción.
 
 ### 2.5 Replicación y Consistencia
 La base para replicar consiste en tener múltiples bancos que reflejan operaciones complementarias. Para verdadera replicación activa (mismo estado en N nodos) se agregaría un tercer participante tipo "mirror" que aplicaría tanto el débito como el crédito o un snapshot consolidado. El coordinador avanzado ya acepta configuración de múltiples participantes vía variable de entorno `BANK_PARTICIPANTS`.
@@ -140,7 +140,7 @@ Actualmente, ante fallo en PREPARE o COMMIT se aborta y se ejecuta un rollback d
 **Framework**: FastAPI 0.104+  
 **Ejecución**: 3 servicios independientes (Bank A:8001, Bank B:8002, API Final:9000)
 
-### 3.1 Pruebas Básicas de Flujo Exitoso ✅ VERIFICADO
+### 3.1 Pruebas Básicas de Flujo Exitoso VERIFICADO
 
 #### Procedimiento
 1. Iniciar servicios locales (Bank A, Bank B, API Final)
@@ -183,11 +183,11 @@ Actualmente, ante fallo en PREPARE o COMMIT se aborta y se ejecuta un rollback d
 ```
 
 #### Verificación
-- ✅ Estado final: `COMMITTED`
-- ✅ Ambos participantes: `prepare_status: READY`
-- ✅ Ambos participantes: `commit_status: COMMITTED`
-- ✅ Sin errores reportados
-- ✅ Transacción registrada en `TransactionLog`
+- Estado final: `COMMITTED`
+- Ambos participantes: `prepare_status: READY`
+- Ambos participantes: `commit_status: COMMITTED`
+- Sin errores reportados
+- Transacción registrada en `TransactionLog`
 
 ### 3.2 Prueba de Falla en PREPARE (Saldo Insuficiente)
 
@@ -229,10 +229,10 @@ Body: {"amount":5000,"from_account":1,"to_account":2}
 ```
 
 #### Verificación
-- ✅ Coordinador detecta `ABORT` en fase PREPARE
-- ✅ No se ejecuta fase COMMIT
-- ✅ Balances permanecen inalterados
-- ✅ Transacción registrada como `ABORTED`
+- Coordinador detecta `ABORT` en fase PREPARE
+- No se ejecuta fase COMMIT
+- Balances permanecen inalterados
+- Transacción registrada como `ABORTED`
 
 ### 3.3 Prueba de Falla en COMMIT
 
@@ -277,10 +277,10 @@ Fallo de un participante durante la fase COMMIT (después de responder READY en 
 ```
 
 #### Implicaciones
-- ⚠️ Commit parcial detectado pero no revertido automáticamente (falta implementación de locks)
-- ✅ Coordinador registra error y estado ABORTED
-- ✅ Rollback invocado (aunque sin efecto real sin tabla `prepared_tx`)
-- 📝 Requiere reconciliación manual o implementación de commit log durable
+- Commit parcial detectado pero no revertido automáticamente (falta implementación de locks)
+- Coordinador registra error y estado ABORTED
+- Rollback invocado (aunque sin efecto real sin tabla `prepared_tx`)
+- Requiere reconciliación manual o implementación de commit log durable
 
 #### Recuperación
 ```powershell
@@ -334,10 +334,10 @@ Participante completamente inaccesible antes de iniciar la transacción.
 ```
 
 #### Verificación
-- ✅ Coordinador maneja servicios inalcanzables gracefully
-- ✅ No se ejecuta commit parcial
-- ✅ Participantes disponibles no quedan en estado inconsistente
-- ✅ Error descriptivo registrado para debugging
+- Coordinador maneja servicios inalcanzables gracefully
+- No se ejecuta commit parcial
+- Participantes disponibles no quedan en estado inconsistente
+- Error descriptivo registrado para debugging
 
 ### 3.5 Consistencia tras Abortos
 
@@ -381,7 +381,7 @@ Write-Host "Transacciones abortadas: $($aborted.Count)"
 ```
 
 #### Conclusión
-✅ El sistema preserva consistencia: transacciones abortadas no persisten cambios en participantes.
+El sistema preserva consistencia: transacciones abortadas no persisten cambios en participantes.
 
 ### 3.6 Reconciliación de Transacciones Estancadas
 
@@ -450,7 +450,7 @@ Respuesta:
 - Monitorear log de reconciliaciones
 - Alertar si volumen de estancadas es elevado (indica problema en coordinador)
 
-✅ Mecanismo de auto-sanación para evitar bloqueos indefinidos.
+Mecanismo de auto-sanación para evitar bloqueos indefinidos.
 
 ### 3.7 Escenario de Extensión con Tercer Participante
 
@@ -534,54 +534,54 @@ Invoke-RestMethod -Uri "http://localhost:9000/health"
 3. **Análítica**: Replicar datos a warehouse sin impactar servicios operacionales
 4. **Disaster Recovery**: Participante pasivo que puede activarse si primarios fallan
 
-✅ El coordinador escala transparentemente a N participantes sin cambios de código.
+El coordinador escala transparentemente a N participantes sin cambios de código.
 
 ## 4. Conclusiones
 
 ### Logros Alcanzados
 
 #### Protocolo 2PC Funcional
-✅ **Implementación completa** de las dos fases (PREPARE y COMMIT) con detección de fallos  
-✅ **Atomicidad global**: Todos los participantes committed o ninguno  
-✅ **Manejo de errores**: Detección de servicios caídos, timeouts, respuestas negativas  
-✅ **Rollback automático**: Invocación de reversión ante fallos en COMMIT  
+**Implementación completa** de las dos fases (PREPARE y COMMIT) con detección de fallos  
+**Atomicidad global**: Todos los participantes committed o ninguno  
+**Manejo de errores**: Detección de servicios caídos, timeouts, respuestas negativas  
+*Rollback automático**: Invocación de reversión ante fallos en COMMIT  
 
 #### Arquitectura Flexible
-✅ **Dos modos de ejecución**: Docker (producción) y Local (desarrollo)  
-✅ **Base de datos adaptable**: MySQL para Docker, SQLite para desarrollo  
-✅ **Configuración centralizada**: Variables de entorno, archivos JSON, fallbacks inteligentes  
-✅ **Escalabilidad**: Soporte para N participantes sin cambios de código  
+**Dos modos de ejecución**: Docker (producción) y Local (desarrollo)  
+**Base de datos adaptable**: MySQL para Docker, SQLite para desarrollo  
+**Configuración centralizada**: Variables de entorno, archivos JSON, fallbacks inteligentes  
+**Escalabilidad**: Soporte para N participantes sin cambios de código  
 
 #### Seguridad Empresarial
-✅ **Autenticación JWT**: Tokens con expiración configurable  
-✅ **Autorización por roles**: Control granular (admin vs user)  
-✅ **Hashing seguro**: bcrypt para protección de credenciales  
-✅ **Endpoints protegidos**: Middleware de validación en todas las rutas sensibles  
+**Autenticación JWT**: Tokens con expiración configurable  
+**Autorización por roles**: Control granular (admin vs user)  
+**Hashing seguro**: bcrypt para protección de credenciales  
+**Endpoints protegidos**: Middleware de validación en todas las rutas sensibles  
 
 #### Operaciones y Mantenibilidad
-✅ **Reconciliación automática**: Limpieza de transacciones estancadas  
-✅ **Logging completo**: TransactionLog con snapshot de estados de participantes  
-✅ **Health checks**: Monitoreo de disponibilidad de servicios  
-✅ **Reintentos configurables**: Tolerancia a fallos transitorios de red  
+**Reconciliación automática**: Limpieza de transacciones estancadas  
+**Logging completo**: TransactionLog con snapshot de estados de participantes  
+**Health checks**: Monitoreo de disponibilidad de servicios  
+**Reintentos configurables**: Tolerancia a fallos transitorios de red  
 
 ### Limitaciones Conocidas
 
 #### Protocolo 2PC
-⚠️ **Sin commit log durable**: Coordinador no persiste decisión antes de enviar COMMIT (riesgo en caída del coordinador)  
-⚠️ **Rollback best-effort**: Sin tabla `prepared_tx`, no hay locks reales ni reversión garantizada  
-⚠️ **Blocking protocol**: Participantes quedan bloqueados esperando decisión del coordinador  
-⚠️ **Sin recovery automático**: Coordinador caído requiere intervención manual  
+**Sin commit log durable**: Coordinador no persiste decisión antes de enviar COMMIT (riesgo en caída del coordinador)  
+**Rollback best-effort**: Sin tabla `prepared_tx`, no hay locks reales ni reversión garantizada  
+**Blocking protocol**: Participantes quedan bloqueados esperando decisión del coordinador  
+**Sin recovery automático**: Coordinador caído requiere intervención manual  
 
 #### Base de Datos
-⚠️ **SQLite en modo local**: No apto para producción (sin concurrencia real)  
-⚠️ **Sin transacciones distribuidas reales**: Falta XA/Two-Phase Commit a nivel de DBMS  
-⚠️ **Sin índices optimizados**: Queries de reconciliación pueden ser lentas con alto volumen  
+**SQLite en modo local**: No apto para producción (sin concurrencia real)  
+**Sin transacciones distribuidas reales**: Falta XA/Two-Phase Commit a nivel de DBMS  
+**Sin índices optimizados**: Queries de reconciliación pueden ser lentas con alto volumen  
 
 #### Seguridad
-⚠️ **Credenciales por defecto**: admin/admin debe cambiarse en producción  
-⚠️ **Sin rate limiting**: API vulnerable a ataques de fuerza bruta  
-⚠️ **Sin HTTPS**: Comunicación en texto plano (agregar TLS/SSL)  
-⚠️ **Tokens sin revocación**: No hay lista negra de tokens comprometidos  
+**Credenciales por defecto**: admin/admin debe cambiarse en producción  
+**Sin rate limiting**: API vulnerable a ataques de fuerza bruta  
+**Sin HTTPS**: Comunicación en texto plano (agregar TLS/SSL)  
+**Tokens sin revocación**: No hay lista negra de tokens comprometidos  
 
 ### Trabajo Futuro
 
@@ -607,11 +607,11 @@ Invoke-RestMethod -Uri "http://localhost:9000/health"
 5. **Multi-región**: Participantes geográficamente distribuidos con replicación
 
 ### Métricas de Éxito
-- ✅ **Prueba 3.1**: Transferencia exitosa con 2 participantes (COMMITTED)
-- ✅ **Prueba 3.2**: Detección correcta de saldo insuficiente (ABORTED)
-- ✅ **Arquitectura flexible**: Ejecución sin Docker lograda
-- ✅ **Documentación completa**: Guías de ejecución y validación
-- ✅ **Código modular**: Fácil extensión a 3+ participantes
+- **Prueba 3.1**: Transferencia exitosa con 2 participantes (COMMITTED)
+- **Prueba 3.2**: Detección correcta de saldo insuficiente (ABORTED)
+- **Arquitectura flexible**: Ejecución sin Docker lograda
+- **Documentación completa**: Guías de ejecución y validación
+- **Código modular**: Fácil extensión a 3+ participantes
 
 ### Lecciones Aprendidas
 1. **2PC es complejo pero potente**: Requiere atención minuciosa a estados y fallos
@@ -776,3 +776,4 @@ sequenceDiagram
 - `GUIA_EJECUCION.md`: Guía completa de pruebas
 - `API final/README.md`: Documentación de la API
 - `API final/.env.example`: Configuración de ejemplo
+
