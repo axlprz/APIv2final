@@ -1,0 +1,17 @@
+[
+  {
+    "name": "bank_a",
+    "url": "http://localhost:8001",
+    "role": "debit"
+  },
+  {
+    "name": "bank_b",
+    "url": "http://localhost:8002",
+    "role": "credit"
+  },
+  {
+    "name": "bank_c",
+    "url": "http://localhost:8003",
+    "role": "mirror"
+  }
+]
