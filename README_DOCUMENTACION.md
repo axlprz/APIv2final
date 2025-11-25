@@ -149,14 +149,14 @@ Actualmente, ante fallo en PREPARE o COMMIT se aborta y se ejecuta un rollback d
 ```mermaid
 graph TB
     subgraph Cliente
-        USER[Usuario/PowerShell]
+        USER[👤 Usuario/PowerShell]
     end
     
-    subgraph Coordinador["API Final (Puerto 9000)"]
-        AUTH[auth/login<br/>auth/register]
-        TRANSFER[/transfer]
-        ADMIN[/admin/reconcile]
-        HEALTH[/health]
+    subgraph Coordinador["🎯 API Final (Puerto 9000)"]
+        AUTH[🔐 auth/login<br/>auth/register]
+        TRANSFER[💸 /transfer]
+        ADMIN[⚙️ /admin/reconcile]
+        HEALTH[❤️ /health]
         
         subgraph Servicios Internos
             SEC[security.py<br/>JWT + Bcrypt]
@@ -167,8 +167,8 @@ graph TB
     end
     
     subgraph Participantes
-        BA[Bank A<br/>Puerto 8001<br/>Débito]
-        BB[Bank B<br/>Puerto 8002<br/>Crédito]
+        BA[🏦 Bank A<br/>Puerto 8001<br/>Débito]
+        BB[🏦 Bank B<br/>Puerto 8002<br/>Crédito]
         
         DBA[(bank_a.db<br/>SQLite)]
         DBB[(bank_b.db<br/>SQLite)]
@@ -212,45 +212,45 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant Usuario
-    participant Coordinador as Coordinador<br/>(API Final)
-    participant BankA as Bank A<br/>(Débito)
-    participant BankB as Bank B<br/>(Crédito)
+    participant Coordinador as 🎯 Coordinador<br/>(API Final)
+    participant BankA as 🏦 Bank A<br/>(Débito)
+    participant BankB as 🏦 Bank B<br/>(Crédito)
     
-    Note over Usuario,BankB: ESCENARIO: Transferencia Exitosa (50 de Cuenta 1 a Cuenta 2)
+    Note over Usuario,BankB: ✅ ESCENARIO: Transferencia Exitosa (50 de Cuenta 1 a Cuenta 2)
     
     Usuario->>Coordinador: 1. POST /transfer<br/>{amount:50, from:1, to:2}<br/>+ JWT Token
     
     Note over Coordinador: Valida autenticación<br/>y autorización
     
     rect rgb(200, 230, 255)
-        Note over Coordinador,BankB: FASE 1: PREPARE (Votación)
+        Note over Coordinador,BankB: 📋 FASE 1: PREPARE (Votación)
         
         Coordinador->>BankA: 2a. POST /prepare<br/>{tx_id, amount:50, account:1}
         Note over BankA: Valida:<br/>- Cuenta existe<br/>- Saldo >= 50<br/>(1000 - 50 = OK)
-        BankA-->>Coordinador: READY
+        BankA-->>Coordinador: ✅ READY
         
         Coordinador->>BankB: 2b. POST /prepare<br/>{tx_id, amount:50, account:2}
         Note over BankB: Valida:<br/>- Cuenta existe<br/>(200 + 50 = OK)
-        BankB-->>Coordinador: READY
+        BankB-->>Coordinador: ✅ READY
     end
     
     Note over Coordinador: Todos respondieron READY<br/>DECISIÓN: COMMIT
     
     rect rgb(200, 255, 200)
-        Note over Coordinador,BankB: FASE 2: COMMIT (Aplicación)
+        Note over Coordinador,BankB: ✅ FASE 2: COMMIT (Aplicación)
         
         Coordinador->>BankA: 3a. POST /commit<br/>{tx_id}
         Note over BankA: Aplica débito:<br/>1000 → 950
-        BankA-->>Coordinador: COMMITTED
+        BankA-->>Coordinador: ✅ COMMITTED
         
         Coordinador->>BankB: 3b. POST /commit<br/>{tx_id}
         Note over BankB: Aplica crédito:<br/>200 → 250
-        BankB-->>Coordinador: COMMITTED
+        BankB-->>Coordinador: ✅ COMMITTED
     end
     
     Note over Coordinador: Guarda log en<br/>transactions.db
     
-    Coordinador-->>Usuario: 4. Respuesta:<br/>{status: "COMMITTED",<br/>participants: [...]}<br/> Transacción exitosa
+    Coordinador-->>Usuario: 4. Respuesta:<br/>{status: "COMMITTED",<br/>participants: [...]}<br/>✅ Transacción exitosa
 ```
 
 ### 3.3 Flujo Detallado del Protocolo 2PC - Caso con Fallo
@@ -258,45 +258,45 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Usuario
-    participant Coordinador as Coordinador<br/>(API Final)
-    participant BankA as Bank A<br/>(Débito)
-    participant BankB as Bank B<br/>(Crédito)
+    participant Coordinador as 🎯 Coordinador<br/>(API Final)
+    participant BankA as 🏦 Bank A<br/>(Débito)
+    participant BankB as 🏦 Bank B<br/>(Crédito)
     
-    Note over Usuario,BankB: ESCENARIO: Saldo Insuficiente (2000 de Cuenta 2)
+    Note over Usuario,BankB: ❌ ESCENARIO: Saldo Insuficiente (2000 de Cuenta 2)
     
     Usuario->>Coordinador: 1. POST /transfer<br/>{amount:2000, from:2, to:1}<br/>+ JWT Token
     
     Note over Coordinador: Valida autenticación<br/>y autorización
     
     rect rgb(255, 230, 200)
-        Note over Coordinador,BankB: FASE 1: PREPARE (Votación)
+        Note over Coordinador,BankB: 📋 FASE 1: PREPARE (Votación)
         
         Coordinador->>BankA: 2a. POST /prepare<br/>{tx_id, amount:2000, account:2}
-        Note over BankA: Valida:<br/>Saldo: 500<br/>Requerido: 2000<br/> INSUFICIENTE
-        BankA-->>Coordinador: ABORT<br/>(Saldo insuficiente)
+        Note over BankA: Valida:<br/>Saldo: 500<br/>Requerido: 2000<br/>❌ INSUFICIENTE
+        BankA-->>Coordinador: ❌ ABORT<br/>(Saldo insuficiente)
         
         Coordinador->>BankB: 2b. POST /prepare<br/>{tx_id, amount:2000, account:1}
-        Note over BankB: Valida:<br/>Cuenta existe<br/> OK para recibir
-        BankB-->>Coordinador: READY
+        Note over BankB: Valida:<br/>Cuenta existe<br/>✅ OK para recibir
+        BankB-->>Coordinador: ✅ READY
     end
     
     Note over Coordinador: Al menos un ABORT<br/>DECISIÓN: ROLLBACK
     
     rect rgb(255, 200, 200)
-        Note over Coordinador,BankB: FASE 2: ROLLBACK (Cancelación)
+        Note over Coordinador,BankB: 🔄 FASE 2: ROLLBACK (Cancelación)
         
         Coordinador->>BankA: 3a. POST /rollback<br/>{tx_id}
         Note over BankA: No hay cambios<br/>que revertir
-        BankA-->>Coordinador: OK
+        BankA-->>Coordinador: ✅ OK
         
         Coordinador->>BankB: 3b. POST /rollback<br/>{tx_id}
         Note over BankB: Cancela reserva<br/>(si existiera)
-        BankB-->>Coordinador: OK
+        BankB-->>Coordinador: ✅ OK
     end
     
     Note over Coordinador: Guarda log en<br/>transactions.db<br/>(status: ABORTED)
     
-    Coordinador-->>Usuario: 4. Respuesta:<br/>{status: "ABORTED",<br/>reason: "Saldo insuficiente"}<br/> Transacción cancelada
+    Coordinador-->>Usuario: 4. Respuesta:<br/>{status: "ABORTED",<br/>reason: "Saldo insuficiente"}<br/>❌ Transacción cancelada
 ```
 
 ### 3.4 Ciclo de Vida de una Transacción
@@ -314,18 +314,18 @@ stateDiagram-v2
     READY_ALL --> COMMITTING: Coordinador envía COMMIT
     
     COMMITTING --> COMMITTED: Todos aplicaron cambios
-    COMMITTING --> PARTIAL_COMMIT: Algunos fallaron (Estado inconsistente)
+    COMMITTING --> PARTIAL_COMMIT: Algunos fallaron (⚠️ Estado inconsistente)
     
     ABORT_PARTIAL --> ROLLING_BACK: Coordinador envía ROLLBACK
     ABORT_TIMEOUT --> ROLLING_BACK
     PARTIAL_COMMIT --> ROLLING_BACK: Intento de recuperación
     
     ROLLING_BACK --> ABORTED: Rollback completo
-    ROLLING_BACK --> FAILED: Rollback falló (Requiere intervención)
+    ROLLING_BACK --> FAILED: Rollback falló (⚠️ Requiere intervención)
     
-    COMMITTED --> [*]: Transacción exitosa
-    ABORTED --> [*]: Transacción cancelada
-    FAILED --> [*]: Requiere reconciliación manual
+    COMMITTED --> [*]: ✅ Transacción exitosa
+    ABORTED --> [*]: ❌ Transacción cancelada
+    FAILED --> [*]: 🔧 Requiere reconciliación manual
     
     note right of PARTIAL_COMMIT
         Estado peligroso:
@@ -344,12 +344,12 @@ stateDiagram-v2
 ```mermaid
 sequenceDiagram
     participant Usuario
-    participant Auth as /auth/login
+    participant Auth as 🔐 /auth/login
     participant Security as security.py
-    participant DB as transactions.db
-    participant Protected as Endpoint Protegido
+    participant DB as 💾 transactions.db
+    participant Protected as 🛡️ Endpoint Protegido
     
-    Note over Usuario,Protected: Flujo de Autenticación JWT
+    Note over Usuario,Protected: 🔑 Flujo de Autenticación JWT
     
     Usuario->>Auth: POST /auth/login<br/>{username: "admin",<br/>password: "admin"}
     
@@ -357,7 +357,7 @@ sequenceDiagram
     DB-->>Auth: User(username, hashed_password, role)
     
     Auth->>Security: verify_password(plain, hash)
-    Security-->>Auth: Password válido
+    Security-->>Auth: ✅ Password válido
     
     Auth->>Security: create_access_token(username, role)
     Note over Security: Genera JWT con:<br/>- sub: username<br/>- role: admin<br/>- exp: 2h
@@ -371,11 +371,11 @@ sequenceDiagram
     
     Protected->>Security: verify_token(token)
     alt Token válido y no expirado
-        Security-->>Protected: {username, role}
-        Note over Protected: Verifica roles:<br/>admin / user
+        Security-->>Protected: ✅ {username, role}
+        Note over Protected: Verifica roles:<br/>admin ✅ / user ✅
         Protected-->>Usuario: Ejecuta operación
     else Token inválido/expirado
-        Security-->>Protected: Invalid token
+        Security-->>Protected: ❌ Invalid token
         Protected-->>Usuario: 401 Unauthorized
     end
 ```
@@ -384,7 +384,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    START([Inicio de Sistema])
+    START([🚀 Inicio de Sistema])
     
     CHECK_ENV{¿ENV_MODE<br/>configurado?}
     SET_LOCAL[Establecer ENV_MODE=local]
@@ -410,8 +410,8 @@ flowchart TD
     
     ALL_OK{¿Todos<br/>responden?}
     
-    READY([Sistema Listo])
-    ERROR([Error: Revisar logs])
+    READY([✅ Sistema Listo])
+    ERROR([❌ Error: Revisar logs])
     
     START --> CHECK_ENV
     CHECK_ENV -->|No| SET_LOCAL
@@ -440,8 +440,8 @@ flowchart TD
     HEALTH_B --> ALL_OK
     HEALTH_C --> ALL_OK
     
-    ALL_OK -->|| READY
-    ALL_OK -->|| ERROR
+    ALL_OK -->|✅| READY
+    ALL_OK -->|❌| ERROR
     
     style START fill:#e3f2fd
     style READY fill:#c8e6c9
@@ -460,25 +460,25 @@ flowchart TD
     
     CHECK_RESP{Analizar<br/>respuestas}
     
-    ALL_READY[Todos READY]
-    SOME_ABORT[Al menos uno ABORT]
-    TIMEOUT[Timeout/Error red]
+    ALL_READY[✅ Todos READY]
+    SOME_ABORT[❌ Al menos uno ABORT]
+    TIMEOUT[⏱️ Timeout/Error red]
     
     COMMIT[Enviar COMMIT]
     ROLLBACK[Enviar ROLLBACK]
     
     CHECK_COMMIT{Verificar<br/>COMMIT}
     
-    ALL_COMMITTED[Todos COMMITTED]
-    PARTIAL[Commits parciales]
+    ALL_COMMITTED[✅ Todos COMMITTED]
+    PARTIAL[⚠️ Commits parciales]
     
     LOG_SUCCESS[Guardar log:<br/>status=COMMITTED]
     LOG_ABORT[Guardar log:<br/>status=ABORTED]
     LOG_PARTIAL[Guardar log:<br/>status=PARTIAL_COMMIT]
     
-    SUCCESS([Éxito])
-    ABORTED([ Abortado])
-    INCONSISTENT([Estado Inconsistente])
+    SUCCESS([✅ Éxito])
+    ABORTED([❌ Abortado])
+    INCONSISTENT([⚠️ Estado Inconsistente])
     
     RECONCILE[Ejecutar<br/>/admin/reconcile]
     
@@ -520,7 +520,7 @@ flowchart TD
 
 ```mermaid
 graph LR
-    subgraph API_Final["API Final (Coordinador)"]
+    subgraph API_Final["📦 API Final (Coordinador)"]
         APP[app.py<br/>FastAPI endpoints]
         TXN[transaction.py<br/>Lógica 2PC]
         PART[participant.py<br/>Cliente HTTP]
@@ -530,17 +530,17 @@ graph LR
         DATABASE[database.py<br/>Motor SQLite]
     end
     
-    subgraph Bank_A["Bank A"]
+    subgraph Bank_A["🏦 Bank A"]
         APP_A[app_local.py<br/>FastAPI]
         DB_A[(bank_a.db)]
     end
     
-    subgraph Bank_B["Bank B"]
+    subgraph Bank_B["🏦 Bank B"]
         APP_B[app_local.py<br/>FastAPI]
         DB_B[(bank_b.db)]
     end
     
-    subgraph External["Externo"]
+    subgraph External["🌐 Externo"]
         CLIENT[Cliente HTTP<br/>PowerShell/Postman]
     end
     
@@ -571,6 +571,7 @@ graph LR
     style Bank_B fill:#fff4e6
     style External fill:#f0f0f0
 ```
+
 
 ---
 
@@ -1062,4 +1063,5 @@ El coordinador escala transparentemente a N participantes sin cambios de código
 3. **Configuración externalizada**: Facilita testing y despliegue en múltiples entornos
 4. **Seguridad desde diseño**: JWT y roles deben integrarse desde el inicio
 5. **Observabilidad crítica**: TransactionLog es esencial para debugging y auditoría
+
 
